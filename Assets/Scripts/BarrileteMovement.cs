@@ -6,7 +6,7 @@ public class BarrileteMovement : MonoBehaviour
 {
     public Transform[] elements;
     public Transform[] transitionElements;
-    
+
     public Camera mainCamera;
     public float transitionDuration = 10.0f; // Duracion de la transicion en segundos
 
@@ -15,27 +15,25 @@ public class BarrileteMovement : MonoBehaviour
     private bool subiendo = false;
     private Vector2[] posicionInicial;
     private Vector3 cameraInitialPosition;
-    
+
 
     public float velHorizontal = 1.0f; // Velocidad horizontal de los elementos
-    public float ampHorizontal = 0.5f; // Amplitud del movimiento horizontal
+    private float[] ampHorizontales; // Amplitudes del movimiento horizontal
+    public float maxAmpHor = 2f;
 
-    public float minSpeed = 1.0f;
-    public float maxSpeed = 5.0f;
-
-    private float[] verticalOffsets; // Nueva variable para almacenar los offsets verticales individuales
     private float[] horizontalOffsets; // Nueva variable para almacenar los offsets horizontales individuales
-    public float verticalAmplitude = 1.0f; // Amplitud del movimiento vertical
 
-    //Sonido
-    private AudioSource SonidoArpa;
+    public float rotationSpeed = 1.0f; // Velocidad de rotación 
+    private float[] rotationAmplitudes; // Amplitudes de rotación individuales
+    public float maxAmpRot = 30f;
 
 
     private void Start()
     {
         posicionInicial = new Vector2[elements.Length];
         horizontalOffsets = new float[transitionElements.Length]; // Inicializar la variable horizontalOffsets
-
+        ampHorizontales = new float[transitionElements.Length];
+        rotationAmplitudes = new float[transitionElements.Length];
 
         for (int i = 0; i < elements.Length; i++)
         {
@@ -45,17 +43,13 @@ public class BarrileteMovement : MonoBehaviour
 
         cameraInitialPosition = mainCamera.transform.position;
 
-        // Inicializar el arreglo verticalOffsets con valores aleatorios
-        verticalOffsets = new float[transitionElements.Length];
         for (int i = 0; i < transitionElements.Length; i++)
         {
-            verticalOffsets[i] = Random.Range(0f, 2f * Mathf.PI);
             // Inicializar la variable horizontalOffsets con valores aleatorios
-            horizontalOffsets[i] = Random.Range(0f, 2f * Mathf.PI);
+            horizontalOffsets[i] = Random.Range(0.0f, 30.0f);
+            ampHorizontales[i] = Random.Range(-maxAmpHor, maxAmpHor);
+            rotationAmplitudes[i] = Random.Range(-maxAmpRot, maxAmpRot);
         }
-
-        // Declaración de sonido
-        SonidoArpa = GetComponent <AudioSource>();
     }
 
     private void Update()
@@ -85,8 +79,6 @@ public class BarrileteMovement : MonoBehaviour
     {
         subiendo = true;
 
-        SonidoArpa.Play();
-
         // Desactivar elementos originales y activar elementos de transicion
         for (int i = 0; i < elements.Length; i++)
         {
@@ -103,7 +95,6 @@ public class BarrileteMovement : MonoBehaviour
         subiendo = false;
         ResetElements();
         contadordeClicks = 0;
-        SonidoArpa.Stop();
     }
 
     private void MovHorizontal()
@@ -117,44 +108,21 @@ public class BarrileteMovement : MonoBehaviour
         }
     }
 
-    //---- FUNCION VOLAR ORIGINAL
-    /* private void Volar()
+    private void Volar()
     {
         for (int i = 0; i < transitionElements.Length; i++)
         {
             Vector2 targetPosition = transitionElements[i].position;
             targetPosition.y += 1f * Time.deltaTime; // Movimiento hacia arriba
 
-            // Movimiento horizontal utilizando una funcion senoidal
-            float xOffset = Mathf.Sin(Time.time * velHorizontal) * ampHorizontal;
-            targetPosition.x += xOffset * Time.deltaTime;
-
-            Vector3 viewportPosition = mainCamera.WorldToViewportPoint(targetPosition); // Convertir a coordenadas de ventana de vista
-
-            // Limitar los movimientos en el eje X dentro del rango de la pantalla
-            viewportPosition.x = Mathf.Clamp01(viewportPosition.x);
-
-            targetPosition = mainCamera.ViewportToWorldPoint(viewportPosition); // Convertir de vuelta a coordenadas del mundo
-
-            transitionElements[i].position = targetPosition;
-        }
-    } */
-
-    //---- FUNCION VOLAR MODIFICADA
-    private void Volar()
-    {
-        for (int i = 0; i < transitionElements.Length; i++)
-        {
-            Vector2 targetPosition = transitionElements[i].position;
-
-            // Movimiento vertical hacia arriba utilizando una función senoidal con velocidad individual y amplitud controlables
-            float verticalSpeed = Random.Range(minSpeed, maxSpeed);
-            float yOffset = Mathf.Sin(Time.time * verticalSpeed + verticalOffsets[i]) * verticalAmplitude;
-            targetPosition.y += yOffset * Time.deltaTime;
-
             // Movimiento horizontal utilizando una función senoidal con velocidad y amplitud controlables
-            float xOffset = Mathf.Sin(Time.time * velHorizontal + horizontalOffsets[i]) * ampHorizontal;
+            float xOffset = Mathf.Sin(Time.time * velHorizontal + horizontalOffsets[i]) * ampHorizontales[i];
             targetPosition.x += xOffset * Time.deltaTime;
+
+            //Rotación de los barriletes
+            float oscillation = Mathf.Sin(Time.time * rotationSpeed) * rotationAmplitudes[i];
+            transitionElements[i].rotation = Quaternion.Euler(0f, 0f, oscillation);
+
 
             // Restringir el movimiento horizontal dentro del rango de la pantalla
             Vector3 viewportPosition = mainCamera.WorldToViewportPoint(targetPosition);
@@ -165,13 +133,13 @@ public class BarrileteMovement : MonoBehaviour
         }
     }
 
-    
+
     private void MoveCameraUp()
     {
         Vector3 targetPosition = mainCamera.transform.position;
         targetPosition.y += 1.0f * Time.deltaTime; // Movimiento de la camara hacia arriba a una velocidad constante
         mainCamera.transform.position = targetPosition;
-    } 
+    }
 
     private void ResetElements()
     {
