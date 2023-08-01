@@ -28,7 +28,8 @@ public class BarrileteMovement : MonoBehaviour
     public float maxAmpRot = 30f;
 
     // Sonido
-    private AudioSource SonidoArpa;
+    private AudioSource arpa;
+    
 
 
     private void Start()
@@ -54,8 +55,7 @@ public class BarrileteMovement : MonoBehaviour
             rotationAmplitudes[i] = Random.Range(-maxAmpRot, maxAmpRot);
         }
 
-        // Sonido
-        SonidoArpa = GetComponent<AudioSource>();
+        arpa = GetComponent<AudioSource>();
     }
 
     private void Update()
@@ -79,12 +79,13 @@ public class BarrileteMovement : MonoBehaviour
         {
             comenzarTransicion();
         }
+       
     }
 
     private void comenzarTransicion()
     {
         subiendo = true;
-        SonidoArpa.Play();
+        arpa.Play();
 
         // Desactivar elementos originales y activar elementos de transicion
         for (int i = 0; i < elements.Length; i++)
@@ -102,7 +103,7 @@ public class BarrileteMovement : MonoBehaviour
         subiendo = false;
         ResetElements();
         contadordeClicks = 0;
-        SonidoArpa.Stop();
+        arpa.Stop();
     }
 
     private void MovHorizontal()
