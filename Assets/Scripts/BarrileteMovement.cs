@@ -27,6 +27,9 @@ public class BarrileteMovement : MonoBehaviour
     private float[] horizontalOffsets; // Nueva variable para almacenar los offsets horizontales individuales
     public float verticalAmplitude = 1.0f; // Amplitud del movimiento vertical
 
+    //Sonido
+    private AudioSource SonidoArpa;
+
 
     private void Start()
     {
@@ -50,6 +53,9 @@ public class BarrileteMovement : MonoBehaviour
             // Inicializar la variable horizontalOffsets con valores aleatorios
             horizontalOffsets[i] = Random.Range(0f, 2f * Mathf.PI);
         }
+
+        // Declaración de sonido
+        SonidoArpa = GetComponent <AudioSource>();
     }
 
     private void Update()
@@ -78,6 +84,8 @@ public class BarrileteMovement : MonoBehaviour
     private void comenzarTransicion()
     {
         subiendo = true;
+
+        SonidoArpa.Play();
 
         // Desactivar elementos originales y activar elementos de transicion
         for (int i = 0; i < elements.Length; i++)
