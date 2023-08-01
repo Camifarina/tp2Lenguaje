@@ -103,6 +103,7 @@ public class BarrileteMovement : MonoBehaviour
         subiendo = false;
         ResetElements();
         contadordeClicks = 0;
+        SonidoArpa.Stop();
     }
 
     private void MovHorizontal()
